@@ -1,13 +1,29 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { autorun } from 'mobx';
+import { StoreProvider } from './store';
+import { CssBaseline } from '@material-ui/core';
+import { Book } from './store/book';
+
+const source = window.localStorage.getItem('interactive-book-store');
+const data = new Book(JSON.parse(source as any) || {
+  title: 'First Book Of Universe',
+  author: 'me',
+  content: 'Boommmmmm',
+  sub: []
+});
+
+autorun(() => {
+  localStorage.setItem('interactive-book-store', JSON.stringify(data));
+});
 
 ReactDOM.render(
-  <React.StrictMode>
+  <StoreProvider value={data}>
+    <CssBaseline />
     <App />
-  </React.StrictMode>,
+  </StoreProvider>,
   document.getElementById('root')
 );
 
