@@ -14,10 +14,24 @@ const AddChapter = ({ data }: {
     const handleClose = () => setOpen(false);
 
     const handleSubscribe = () => {
-        data.addSub({
-            title, author, content
-        });
-        setOpen(false);
+        fetch(`http://localhost:3000/api/add-chapter?id=${data.id}`, {
+            method: 'post',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title, author, content
+            }),
+        })
+        .then(data => data.json())
+        .then(res => {
+            data.addSub({
+                title, author, content,
+                id: res.id
+            });
+            setOpen(false);
+        })
     }
 
     return <>
@@ -91,9 +105,8 @@ const useChapterBoxStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export const ChapterBox = ({ data, onClickTitle }: {
+export const ChapterBox = ({ data }: {
     data: Chapter;
-    onClickTitle?: Function;
 }) => {
     const classes = useChapterBoxStyles();
     const [selectedSubChapterId, setSelectedSubChapterId] = useState('');
@@ -106,33 +119,46 @@ export const ChapterBox = ({ data, onClickTitle }: {
     }
 
     useEffect(() => {
-        setSelectedSubChapter(data.sub.find(item => item.id === selectedSubChapterId) || null);
+        if (!selectedSubChapterId) return;
+        if (data.subMap[selectedSubChapterId]) {
+            setSelectedSubChapter(data.subMap[selectedSubChapterId]);
+        } else {
+            fetch(`http://localhost:3000/api/chapter?id=${selectedSubChapterId}`, {
+                method: 'get'
+            })
+            .then(data => data.json())
+            .then(res => {
+                let chapter = new Chapter(res);
+                setSelectedSubChapter(chapter);
+                data.addSubMap(chapter);
+            });
+        }
     }, [selectedSubChapterId, data]);
 
     return <>
-        <ButtonBase className={classes.title} onClick={() => onClickTitle && onClickTitle()}>
-            {data.title}
-            <Box className={classes.author} component="span">author: {data.author}</Box>
-        </ButtonBase>
         <Box className={classes.content}>{data.content}</Box>
-        <Box className={classes.selectorContainer}>
-            {(!selectedSubChapterId || showSelector) && <>
-                {data.sub.length !== 0 && <FormControl component="fieldset" fullWidth>
-                    <FormLabel component="legend">选择一条分支</FormLabel>
-                    <RadioGroup value={selectedSubChapterId} onChange={handleChange}>
-                        <Observer>
-                            {() => <>
-                                {data.sub.map(item => <FormControlLabel
-                                    key={item.id} value={item.id} control={<Radio size="small"/>} label={item.title}/>)}
-                            </>}
-                        </Observer>
-                    </RadioGroup>
-                </FormControl>}
-                <AddChapter data={data} />
+        {selectedSubChapter && <>
+            <ButtonBase className={classes.title} onClick={() => setShowSelector(!showSelector)}>
+                {selectedSubChapter.title}
+                <Box className={classes.author} component="span">author: {selectedSubChapter.author}</Box>
+            </ButtonBase>
+        </>}
+        <Observer>
+            {() => <>
+                {(!selectedSubChapterId || showSelector) && <Box className={classes.selectorContainer}>
+                    {data.sub.length !== 0 && <FormControl component="fieldset" fullWidth>
+                        <FormLabel component="legend">选择一条分支</FormLabel>
+                        <RadioGroup value={selectedSubChapterId} onChange={handleChange}>
+                            {data.sub.map(item => <FormControlLabel
+                                key={item.id} value={item.id} control={<Radio size="small"/>} label={item.title}/>)}
+                        </RadioGroup>
+                    </FormControl>}
+                    <AddChapter data={data} />
+                </Box>}
             </>}
-        </Box>
+        </Observer>
         {selectedSubChapter &&
-            <ChapterBox key={selectedSubChapter.id} data={selectedSubChapter}
-            onClickTitle={() => setShowSelector(!showSelector)} />}
+            <ChapterBox key={selectedSubChapter.id} data={selectedSubChapter} />
+        }
     </>;
 }

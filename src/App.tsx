@@ -1,7 +1,7 @@
 import classes from '*.module.css';
 import { AppBar, Box, Container, createStyles, makeStyles, Theme, Toolbar, Typography } from '@material-ui/core';
 import { Observer } from 'mobx-react';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { ChapterBox } from './Chapter';
 import { StoreContext } from './store';
 
@@ -20,17 +20,36 @@ function App() {
   const classes = useStyles();
   const store = useContext(StoreContext);
 
+  useEffect(() => {
+    fetch('http://localhost:3000/api/book', {
+      method: 'get'
+    })
+    .then(data => data.json())
+    .then(data => {
+      console.log(data);
+      store.initialize(data);
+    });
+  }, [store]);
+
   return <Box>
     <AppBar position="sticky">
       <Toolbar variant="dense">
         <Typography variant="h6" className={classes.title}>
-          my book
+          <Observer>
+            {() => <>
+              {store.initialized ? store.title : ''}
+            </>}
+          </Observer>
         </Typography>
       </Toolbar>
     </AppBar>
     <Container className={classes.container}>
       <Observer>
-        {() => <ChapterBox data={store} />}
+        {() => <>
+          {store.initialized ?
+            <ChapterBox data={store} /> :
+            <Box>waiting...</Box>}
+        </>}
       </Observer>
     </Container>
   </Box>;

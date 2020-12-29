@@ -8,16 +8,11 @@ import { CssBaseline } from '@material-ui/core';
 import { Book } from './store/book';
 
 const source = window.localStorage.getItem('interactive-book-store');
-const data = new Book(JSON.parse(source as any) || {
-  title: 'First Book Of Universe',
-  author: 'me',
-  content: 'Boommmmmm',
-  sub: []
-});
+const data = new Book();
 
-autorun(() => {
-  localStorage.setItem('interactive-book-store', JSON.stringify(data));
-});
+// autorun(() => {
+//   localStorage.setItem('interactive-book-store', JSON.stringify(data));
+// });
 
 ReactDOM.render(
   <StoreProvider value={data}>
