@@ -1,7 +1,9 @@
-import { Box, Button, ButtonBase, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, makeStyles, Radio, RadioGroup, TextField, Theme } from '@material-ui/core';
+import { Box, Button, ButtonBase, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, makeStyles, Radio, RadioGroup, TextField, Theme, Typography } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
-import { Chapter } from './store/chapter';
+import { Chapter } from '../store/chapter';
 import { Observer } from 'mobx-react';
+import { ChapterSelector } from './ChapterSelector';
+import { config } from '../config';
 
 const AddChapter = ({ data }: {
     data: Chapter
@@ -14,14 +16,15 @@ const AddChapter = ({ data }: {
     const handleClose = () => setOpen(false);
 
     const handleSubscribe = () => {
-        fetch(`http://localhost:3000/api/add-chapter?id=${data.id}`, {
+        fetch(`${config.apiHost}/api/chapter`, {
             method: 'post',
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                title, author, content
+                title, author, content,
+                parentId: data.id,
             }),
         })
         .then(data => data.json())
@@ -81,21 +84,24 @@ const AddChapter = ({ data }: {
 const useChapterBoxStyles = makeStyles((theme: Theme) =>
     createStyles({
         title: {
-            fontWeight: 700,
-            marginBottom: theme.spacing(0.5),
-            padding: theme.spacing(1),
+            marginTop: theme.spacing(8),
             width: '100%',
-            textAlign: 'left',
-            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            flexDirection: 'column',
         },
         author: {
             fontWeight: 400,
-            marginLeft: theme.spacing(1),
             color: theme.palette.grey[400],
+            fontSize: theme.spacing(2),
+            textAlign: 'right',
+            width: '100%',
+            marginTop: theme.spacing(1),
+            paddingRight: theme.spacing(4),
         },
         content: {
-            paddingLeft: theme.spacing(3),
-            marginBottom: theme.spacing(1.5),
+            marginTop: theme.spacing(6),
+            textIndent: theme.spacing(4),
+            lineHeight: theme.spacing(.22),
         },
         selectorContainer: {
             paddingLeft: theme.spacing(3),
@@ -105,13 +111,19 @@ const useChapterBoxStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export const ChapterBox = ({ data }: {
+export const ChapterBox = ({ data, parent, setParentId }: {
     data: Chapter;
+    parent?: Chapter;
+    setParentId?: Function;
 }) => {
     const classes = useChapterBoxStyles();
     const [selectedSubChapterId, setSelectedSubChapterId] = useState('');
     const [selectedSubChapter, setSelectedSubChapter] = useState<Chapter | null>(null);
     const [showSelector, setShowSelector] = useState(false);
+
+    const handleSelect = (id: string) => {
+        setParentId && setParentId(id);
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedSubChapterId(e.target.value);
@@ -119,16 +131,22 @@ export const ChapterBox = ({ data }: {
     }
 
     useEffect(() => {
+        if (data.sub.length === 0) return;
+        setSelectedSubChapterId(data.sub[0].id);
+    }, [data]);
+
+    useEffect(() => {
         if (!selectedSubChapterId) return;
         if (data.subMap[selectedSubChapterId]) {
             setSelectedSubChapter(data.subMap[selectedSubChapterId]);
         } else {
-            fetch(`http://localhost:3000/api/chapter?id=${selectedSubChapterId}`, {
+            fetch(`${config.apiHost}/api/chapter/${selectedSubChapterId}`, {
                 method: 'get'
             })
             .then(data => data.json())
-            .then(res => {
-                let chapter = new Chapter(res);
+            .then(({ chapter: chapterSource }) => {
+                // console.log('res', res);
+                let chapter = new Chapter(chapterSource);
                 setSelectedSubChapter(chapter);
                 data.addSubMap(chapter);
             });
@@ -137,10 +155,13 @@ export const ChapterBox = ({ data }: {
 
     return <>
         <Box className={classes.content}>{data.content}</Box>
+        {parent && <ChapterSelector data={parent} onSelect={handleSelect} selectId={data.id} />}
         {selectedSubChapter && <>
             <ButtonBase className={classes.title} onClick={() => setShowSelector(!showSelector)}>
-                {selectedSubChapter.title}
-                <Box className={classes.author} component="span">author: {selectedSubChapter.author}</Box>
+                <Typography variant="h4">
+                    {selectedSubChapter.title}
+                </Typography>
+                <Box className={classes.author}>author: {selectedSubChapter.author}</Box>
             </ButtonBase>
         </>}
         <Observer>
@@ -157,8 +178,16 @@ export const ChapterBox = ({ data }: {
                 </Box>}
             </>}
         </Observer>
-        {selectedSubChapter &&
-            <ChapterBox key={selectedSubChapter.id} data={selectedSubChapter} />
-        }
+        <Observer>
+            {() => <>
+                {selectedSubChapter &&
+                    <ChapterBox
+                        key={selectedSubChapter.id}
+                        data={selectedSubChapter}
+                        parent={data}
+                        setParentId={setSelectedSubChapterId} />
+                }
+            </>}
+        </Observer>
     </>;
 }
