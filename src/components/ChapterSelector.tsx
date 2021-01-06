@@ -20,7 +20,7 @@ export const ChapterSelector = ({ data, onSelect, selectId }: {
     return <Box className={classes.container}>
         <List
             subheader={
-                <ListSubheader>
+                <ListSubheader disableSticky={true}>
                     觉得本章看的不过瘾？看看其他同样优秀的版本吧：
                 </ListSubheader>
             }

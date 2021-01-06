@@ -7,7 +7,6 @@ import { StoreProvider } from './store';
 import { CssBaseline } from '@material-ui/core';
 import { Book } from './store/book';
 
-const source = window.localStorage.getItem('interactive-book-store');
 const data = new Book();
 
 // autorun(() => {
