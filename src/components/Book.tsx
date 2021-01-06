@@ -1,11 +1,12 @@
-import { AppBar, Box, Container, createStyles, IconButton, makeStyles, Theme, Toolbar, Typography } from '@material-ui/core';
+import { AppBar, Box, Container, createStyles, Fade, IconButton, makeStyles, Theme, Toolbar, Typography } from '@material-ui/core';
 import { Observer } from 'mobx-react';
 import React, { useEffect, useState } from 'react';
 import { ChapterBox } from './Chapter';
 import { config } from '../config';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { Book } from '../store/book';
 import { HideOnScroll } from './HideOnScroll';
+import Skeleton from '@material-ui/lab/Skeleton';
 
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 
@@ -26,6 +27,7 @@ export const BookBox = () => {
     const classes = useStyles();
     const { id } = useParams() as any;
     const [book, setBook] = useState<Book | null>(null);
+    const history = useHistory();
 
     useEffect(() => {
         fetch(`${config.apiHost}/api/chapter/${id}`, {
@@ -41,11 +43,14 @@ export const BookBox = () => {
         <HideOnScroll>
             <AppBar position="sticky" color="default">
                 <Toolbar variant="dense">
-                    <IconButton edge="start" className={classes.menuButton} color="inherit">
+                    <IconButton
+                        onClick={() => history.goBack()}
+                        edge="start" className={classes.menuButton} color="inherit">
                         <ArrowBackIosIcon />
                     </IconButton>
                     <Typography variant="h6" className={classes.title}>
-                        {book?.title}
+                        {book ? <Fade in={!!book}><Box>{book.title}</Box></Fade>
+                            : <Skeleton animation="wave" width={100} />}
                     </Typography>
                 </Toolbar>
             </AppBar>
