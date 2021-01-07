@@ -42,6 +42,7 @@ export const Center = () => {
                 nick: '',
                 id: '',
             });
+            history.replace('/');
         });
     }
 

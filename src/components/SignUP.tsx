@@ -88,7 +88,7 @@ export const SignUp = () => {
             setIsNickError(true);
             return;
         } else if (!config.nickRegExp.test(nick)) {
-            setNickErrorMsg('昵称格式不符合要求');
+            setNickErrorMsg('昵称格式不符合要求(4-20个字符)');
             setIsNickError(true);
             return;
         }
@@ -98,7 +98,7 @@ export const SignUp = () => {
             setIsPasswordError(true);
             return;
         } else if (!config.passwordRegExp.test(password)) {
-            setPasswordErrorMsg('密码格式不正确');
+            setPasswordErrorMsg('密码格式不正确(必须有数字和字母，6-20个字符)');
             setIsPasswordError(true);
             return;
         } else if (!passwordSec) {
