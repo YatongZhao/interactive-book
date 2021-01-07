@@ -7,6 +7,7 @@ import { BookBox } from './components/Book';
 import { Login } from './components/Login';
 import { StoreContext } from './store';
 import { config } from './config';
+import { SignUp } from './components/SignUP';
 
 const App = () => {
   const store = useContext(StoreContext);
@@ -36,6 +37,9 @@ const App = () => {
     </Route>
     <Route path="/login">
       <Login />
+    </Route>
+    <Route path="/sign-up">
+      <SignUp />
     </Route>
   </Router>;
 }

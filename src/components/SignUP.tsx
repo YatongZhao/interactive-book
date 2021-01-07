@@ -1,24 +1,10 @@
-import { AppBar, Box, Button, Theme, Grid, IconButton, makeStyles, TextField, Toolbar, createStyles, Typography } from '@material-ui/core';
+import { Box, Button, CircularProgress, createStyles, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
 import React, { useContext, useEffect, useState } from 'react';
-import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
-import { Link, useHistory } from 'react-router-dom';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { config } from '../config';
+import { useHistory } from 'react-router-dom';
 import { StoreContext } from '../store';
+import { SimpleAppBar } from './Login';
+import { config } from '../config';
 
-export const SimpleAppBar = () => {
-    const history = useHistory();
-
-    return <AppBar position="sticky" color="inherit" elevation={0}>
-        <Toolbar variant="dense">
-            <IconButton
-                onClick={() => history.goBack()}
-                edge="start" color="inherit">
-                <ArrowBackIosIcon />
-            </IconButton>
-        </Toolbar>
-    </AppBar>;
-}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,26 +25,37 @@ const useStyles = makeStyles((theme: Theme) =>
         marginTop: -10,
         marginLeft: -12,
     },
-    signInBox: {
-        display: 'flex',
-        justifyContent: 'center',
-    },
   })
 );
 
-export const Login = () => {
+export const SignUp = () => {
     const history = useHistory();
+
+    const [nick, setNick] = useState('');
+    const [isNickError, setIsNickError] = useState(false);
+    const [nickErrorMsg, setNickErrorMsg] = useState('');
+
     const [phone, setPhone] = useState('');
     const [isPhoneError, setIsPhoneError] = useState(false);
     const [phoneErrorMsg, setPhoneErrorMsg] = useState('');
+
     const [password, setPassword] = useState('');
     const [isPasswordError, setIsPasswordError] = useState(false);
     const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
+
+    const [passwordSec, setPasswordSec] = useState('');
+    const [isPasswordSecError, setIsPasswordSecError] = useState(false);
+    const [passwordSecErrorMsg, setPasswordSecErrorMsg] = useState('');
 
     const [isPending, setIsPending] = useState(false);
     const store = useContext(StoreContext);
 
     const classes = useStyles();
+
+    useEffect(() => {
+        setNickErrorMsg('');
+        setIsNickError(false);
+    }, [nick]);
 
     useEffect(() => {
         setPhoneErrorMsg('');
@@ -70,10 +67,12 @@ export const Login = () => {
         setIsPasswordError(false);
     }, [password]);
 
-    function onSubmit() {
-        if (isPhoneError) return;
-        if (isPasswordError) return;
+    useEffect(() => {
+        setPasswordSecErrorMsg('');
+        setIsPasswordSecError(false);
+    }, [passwordSec]);
 
+    function onSubmit() {
         if (!phone) {
             setPhoneErrorMsg('请输入手机号');
             setIsPhoneError(true);
@@ -84,8 +83,37 @@ export const Login = () => {
             return;
         }
 
+        if (!nick) {
+            setNickErrorMsg('请输入昵称');
+            setIsNickError(true);
+            return;
+        } else if (!config.nickRegExp.test(nick)) {
+            setNickErrorMsg('昵称格式不符合要求');
+            setIsNickError(true);
+            return;
+        }
+
+        if (!password) {
+            setPasswordErrorMsg('请设置密码');
+            setIsPasswordError(true);
+            return;
+        } else if (!config.passwordRegExp.test(password)) {
+            setPasswordErrorMsg('密码格式不正确');
+            setIsPasswordError(true);
+            return;
+        } else if (!passwordSec) {
+            setPasswordSecErrorMsg('请输入二次确认密码');
+            setIsPasswordSecError(true);
+            return;
+        } else if (password !== passwordSec) {
+            setPasswordSecErrorMsg('两次输入密码不相同');
+            setIsPasswordSecError(true);
+            setIsPasswordError(true);
+            return;
+        }
+
         setIsPending(true);
-        fetch(`${config.apiHost}/api/user/sign-in`, {
+        fetch(`${config.apiHost}/api/user/sign-up`, {
             method: 'post',
             mode: 'cors',
             credentials: 'include',
@@ -93,24 +121,25 @@ export const Login = () => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                phone, password
+                phone, password, nick
             }),
         })
         .then(data => data.json())
         .then(data => {
             setIsPending(false);
             if (!data.errCode) {
-                history.goBack();
                 store.setIsLogin(true);
                 store.setUserInfo(data.info);
+                history.push('/');
                 return;
             }
-            if (data.errCode === 1) {
-                setPhoneErrorMsg(data.errMsg);
+
+            if (data.errCode === 4) {
+                setPhoneErrorMsg('该手机号已被注册');
                 setIsPhoneError(true);
-            } else if (data.errCode === 2) {
-                setPasswordErrorMsg(data.errMsg);
-                setIsPasswordError(true);
+            } else if (data.errCode === 5) {
+                setNickErrorMsg('该昵称已存在');
+                setIsNickError(true);
             }
         });
     }
@@ -121,6 +150,16 @@ export const Login = () => {
             <Grid item xs={12}>
                 <TextField
                     autoFocus
+                    error={isNickError}
+                    helperText={nickErrorMsg}
+                    value={nick}
+                    onChange={e => setNick(e.target.value)}
+                    label="昵称"
+                    fullWidth
+                />
+            </Grid>
+            <Grid item xs={12}>
+                <TextField
                     error={isPhoneError}
                     helperText={phoneErrorMsg}
                     value={phone}
@@ -141,19 +180,25 @@ export const Login = () => {
                     fullWidth
                 />
             </Grid>
+            <Grid item xs={12}>
+                <TextField
+                    error={isPasswordSecError}
+                    helperText={passwordSecErrorMsg}
+                    value={passwordSec}
+                    type="password"
+                    onChange={e => setPasswordSec(e.target.value)}
+                    label="确认密码"
+                    fullWidth
+                />
+            </Grid>
             <Grid item xs={12} className={classes.submitBtnContainer}>
                 <Button
                     disabled={isPending}
                     onClick={onSubmit}
                     className={classes.submitBtn} variant="outlined" color="primary" fullWidth>
-                    登录
+                    注册
                 </Button>
                 {isPending && <CircularProgress size={24} className={classes.buttonProgress} />}
-            </Grid>
-            <Grid item xs={12} className={classes.signInBox}>
-                <Typography variant="caption">
-                    还没有账号，立即前往<Link to="/sign-up">注册</Link>
-                </Typography>
             </Grid>
         </Grid>
     </Box>;
