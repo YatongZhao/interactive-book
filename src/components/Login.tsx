@@ -1,7 +1,7 @@
-import { AppBar, Box, Button, Theme, Grid, IconButton, makeStyles, TextField, Toolbar, createStyles, Typography } from '@material-ui/core';
+import { AppBar, Box, Button, Theme, Grid, IconButton, makeStyles, TextField, Toolbar, createStyles, Typography, Link } from '@material-ui/core';
 import React, { useContext, useEffect, useState } from 'react';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
-import { Link, useHistory } from 'react-router-dom';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { config } from '../config';
 import { StoreContext } from '../store';
@@ -152,7 +152,7 @@ export const Login = () => {
             </Grid>
             <Grid item xs={12} className={classes.signInBox}>
                 <Typography variant="caption">
-                    还没有账号，立即前往<Link to="/sign-up">注册</Link>
+                    还没有账号，立即前往<Link component={RouterLink} to="/sign-up">注册</Link>
                 </Typography>
             </Grid>
         </Grid>
