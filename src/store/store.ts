@@ -13,6 +13,7 @@ export class Store {
         makeObservable(this, {
             isLogin: observable,
             isIsLoginReady: observable,
+            userInfo: observable,
             setIsLogin: action,
             setUserInfo: action,
         });

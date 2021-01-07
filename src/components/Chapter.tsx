@@ -1,11 +1,11 @@
-import { Box, Button, ButtonBase, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, makeStyles, Radio, RadioGroup, TextField, Theme, Typography } from '@material-ui/core';
+import { Box, Button, ButtonBase, createStyles, makeStyles, Theme, Typography, Link } from '@material-ui/core';
 import React, { useContext, useEffect, useState } from 'react';
 import { Chapter } from '../store/chapter';
 import { Observer } from 'mobx-react';
 import { ChapterSelector } from './ChapterSelector';
 import { config } from '../config';
 import { AddChapterDialog } from './Home';
-import { Link, useHistory } from 'react-router-dom';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { StoreContext } from '../store';
 
 const useAddChapterStyles = makeStyles((theme: Theme) =>
@@ -31,7 +31,7 @@ export const AddChapter = ({ onSubmit }: {
     return <Observer>
         {() => <>
             {store.isLogin ? <>
-                <Button onClick={() => setOpenAddDialog(true)}>创作章节</Button>
+                <Button onClick={() => setOpenAddDialog(true)} fullWidth variant="outlined">创作章节</Button>
                 <AddChapterDialog
                     titleLabel="标题"
                     dialogTitle="添加章节"
@@ -42,7 +42,7 @@ export const AddChapter = ({ onSubmit }: {
             </> :
             <Box className={classes.loginTips}>
                 <Typography variant="caption">
-                    快去<Link to="/login">登录</Link>开始自己对本章的创作吧～
+                    快去<Link to="/login" component={RouterLink}>登录</Link>开始自己对本章的创作吧～
                 </Typography>
             </Box>}
         </>}
@@ -152,6 +152,7 @@ export const ChapterBox = ({ data, parent, setParentId }: {
     return <>
         <Box className={classes.content}>{data.content}</Box>
         {parent && <ChapterSelector
+            header="觉得本章看的不过瘾？看看其他同样优秀的版本吧："
             onSubmit={handleCreateChapterSubmit(parent)}
             data={parent} onSelect={handleSelect} selectId={data.id} />}
         {selectedSubChapter && <>
@@ -166,6 +167,7 @@ export const ChapterBox = ({ data, parent, setParentId }: {
         <Observer>
             {() => <>
                 {(!selectedSubChapterId || showSelector) && <ChapterSelector
+                    header="本章其他分支："
                     onSubmit={handleCreateChapterSubmit(data)}
                     data={data} onSelect={handleChange} selectId={selectedSubChapterId} />}
             </>}

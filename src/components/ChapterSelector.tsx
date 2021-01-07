@@ -8,14 +8,15 @@ const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         container: {
             marginTop: theme.spacing(2),
+            backgroundColor: theme.palette.grey[300],
         },
         addChapterBox: {
-            marginLeft: theme.spacing(4),
+            padding: theme.spacing(4),
         }
     })
 );
 
-export const ChapterSelector = ({ data, onSelect, selectId, onSubmit }: {
+export const ChapterSelector = ({ data, onSelect, selectId, onSubmit, header }: {
     data: Chapter;
     selectId: String;
     onSelect: Function;
@@ -23,15 +24,16 @@ export const ChapterSelector = ({ data, onSelect, selectId, onSubmit }: {
         content: string;
         title: string;
     }) => Promise<void>;
+    header: string;
 }) => {
     const classes = useStyles();
 
     return <Box className={classes.container}>
-        <Observer>
+        {data.sub.length !== 0 && <Observer>
             {() => <List
                 subheader={
                     <ListSubheader disableSticky={true}>
-                        觉得本章看的不过瘾？看看其他同样优秀的版本吧：
+                        {header}
                     </ListSubheader>
                 }
             >
@@ -42,7 +44,7 @@ export const ChapterSelector = ({ data, onSelect, selectId, onSubmit }: {
                     <ListItemText primary={item.title} />
                 </ListItem>)}
             </List>}
-        </Observer>
+        </Observer>}
         <Box className={classes.addChapterBox}>
             <AddChapter onSubmit={onSubmit}/>
         </Box>

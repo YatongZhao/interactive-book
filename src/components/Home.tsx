@@ -1,8 +1,8 @@
-import { AppBar, Box, Button, createStyles, Dialog, Fab, Fade, Grid, IconButton, InputBase, LinearProgress, List, ListItem, ListItemText, makeStyles, Slide, TextField, Theme, Toolbar, Typography } from '@material-ui/core';
+import { AppBar, Box, Button, createStyles, Dialog, Fab, Fade, Grid, IconButton, Link, LinearProgress, List, ListItem, ListItemText, makeStyles, Slide, TextField, Theme, Toolbar, Typography } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { Observer } from 'mobx-react';
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { config } from '../config';
 import { StoreContext } from '../store';
 
@@ -230,7 +230,7 @@ export const Home = () => {
                         {store.isIsLoginReady ? <>
                             {store.isLogin ?
                                 <Fade in={store.isLogin}>
-                                    <Box>{store.userInfo.nick}</Box>
+                                    <Button color="inherit" onClick={() => history.push('/center')}>{store.userInfo.nick}</Button>
                                 </Fade> :
                                 <Fade in={!store.isLogin}>
                                     <Button color="inherit" onClick={() => history.push('/login')}>Login</Button>
@@ -251,7 +251,7 @@ export const Home = () => {
             {() => <>
                 {!store.isLogin && bookList.length > 0 && <Box className={classes.loginTips}>
                     <Typography variant="caption">
-                        快去<Link to="/login">登录</Link>开始自己的创作吧～
+                        快去<Link component={RouterLink} to="/login">登录</Link>开始自己的创作吧～
                     </Typography>
                 </Box>}
                 {store.isLogin && <Fab className={classes.fab} color="primary" onClick={() => setOpenAddDialog(true)}>

@@ -8,6 +8,7 @@ import { Login } from './components/Login';
 import { StoreContext } from './store';
 import { config } from './config';
 import { SignUp } from './components/SignUP';
+import { Center } from './components/Center';
 
 const App = () => {
   const store = useContext(StoreContext);
@@ -40,6 +41,9 @@ const App = () => {
     </Route>
     <Route path="/sign-up">
       <SignUp />
+    </Route>
+    <Route path="/center">
+      <Center />
     </Route>
   </Router>;
 }
