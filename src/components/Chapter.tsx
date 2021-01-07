@@ -1,84 +1,52 @@
 import { Box, Button, ButtonBase, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, makeStyles, Radio, RadioGroup, TextField, Theme, Typography } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Chapter } from '../store/chapter';
 import { Observer } from 'mobx-react';
 import { ChapterSelector } from './ChapterSelector';
 import { config } from '../config';
+import { AddChapterDialog } from './Home';
+import { Link, useHistory } from 'react-router-dom';
+import { StoreContext } from '../store';
 
-const AddChapter = ({ data }: {
-    data: Chapter
-}) => {
-    const [open, setOpen] = useState(false);
-    const [title, setTitle] = useState('');
-    const [author, setAuthor] = useState('');
-    const [content, setContent] = useState('');
-
-    const handleClose = () => setOpen(false);
-
-    const handleSubscribe = () => {
-        fetch(`${config.apiHost}/api/chapter`, {
-            method: 'post',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title, author, content,
-                parentId: data.id,
-            }),
-        })
-        .then(data => data.json())
-        .then(res => {
-            data.addSub({
-                title, author, content,
-                id: res.id
-            });
-            setOpen(false);
-        })
+const useAddChapterStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    loginTips: {
+        marginTop: theme.spacing(1),
+        marginBottom: theme.spacing(1),
+        color: theme.palette.grey[400],
     }
+  })
+);
 
-    return <>
-        <Button variant="contained" color="default" disableElevation size="small" onClick={() => setOpen(true)}>在当前位置添加一个章节</Button>
-        <Dialog onClose={handleClose} open={open}>
-            <DialogTitle>添加一个章节</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    在当前位置，添加一个章节选择
-                </DialogContentText>
-                <TextField
-                    autoFocus
-                    value={title}
-                    onChange={e => setTitle(e.target.value)}
-                    label="标题"
-                    fullWidth
-                />
-                <TextField
-                    autoFocus
-                    value={author}
-                    onChange={e => setAuthor(e.target.value)}
-                    label="作者"
-                    fullWidth
-                />
-                <TextField
-                    autoFocus
-                    value={content}
-                    onChange={e => setContent(e.target.value)}
-                    label="内容"
-                    fullWidth
-                    multiline
-                    rowsMax={10}
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleSubscribe} color="primary">
-                    确定
-                </Button>
-                <Button onClick={handleClose} color="primary">
-                    取消
-                </Button>
-            </DialogActions>
-        </Dialog>
-    </>;
+export const AddChapter = ({ onSubmit }: {
+    onSubmit: (arg: {
+        content: string;
+        title: string;
+    }) => Promise<void>;
+}) => {
+    const [openAddDialog, setOpenAddDialog] = useState(false);
+    const store = useContext(StoreContext);
+    const classes = useAddChapterStyles();
+
+    return <Observer>
+        {() => <>
+            {store.isLogin ? <>
+                <Button onClick={() => setOpenAddDialog(true)}>创作章节</Button>
+                <AddChapterDialog
+                    titleLabel="标题"
+                    dialogTitle="添加章节"
+                    contentPlaceHolder="本章内容..."
+                    open={openAddDialog}
+                    handleClose={() => setOpenAddDialog(false)}
+                    onSubmit={onSubmit} />
+            </> :
+            <Box className={classes.loginTips}>
+                <Typography variant="caption">
+                    快去<Link to="/login">登录</Link>开始自己对本章的创作吧～
+                </Typography>
+            </Box>}
+        </>}
+    </Observer>;
 }
 
 const useChapterBoxStyles = makeStyles((theme: Theme) =>
@@ -119,14 +87,43 @@ export const ChapterBox = ({ data, parent, setParentId }: {
     const [selectedSubChapterId, setSelectedSubChapterId] = useState('');
     const [selectedSubChapter, setSelectedSubChapter] = useState<Chapter | null>(null);
     const [showSelector, setShowSelector] = useState(false);
+    const history = useHistory();
 
     const handleSelect = (id: string) => {
         setParentId && setParentId(id);
     }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedSubChapterId(e.target.value);
+    const handleChange = (id: string) => {
+        setSelectedSubChapterId(id);
         setShowSelector(false);
+    }
+
+    function handleCreateChapterSubmit(parent: Chapter) {
+
+        return function ({ content, title }: {
+            content: string; title: string;
+        }) {
+            return fetch(`${config.apiHost}/api/chapter`, {
+                method: 'post',
+                mode: 'cors',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title, content,
+                    parentId: parent.id,
+                }),
+            })
+            .then(data => data.json())
+            .then(res => {
+                if (res.errCode === 1000) {
+                    history.push('/login');
+                    return;
+                }
+                parent.addSub(res.chapter);
+            });
+        }
     }
 
     useEffect(() => {
@@ -154,7 +151,9 @@ export const ChapterBox = ({ data, parent, setParentId }: {
 
     return <>
         <Box className={classes.content}>{data.content}</Box>
-        {parent && <ChapterSelector data={parent} onSelect={handleSelect} selectId={data.id} />}
+        {parent && <ChapterSelector
+            onSubmit={handleCreateChapterSubmit(parent)}
+            data={parent} onSelect={handleSelect} selectId={data.id} />}
         {selectedSubChapter && <>
             <ButtonBase className={classes.title} onClick={() => setShowSelector(!showSelector)}>
                 <Typography variant="h4">
@@ -163,18 +162,12 @@ export const ChapterBox = ({ data, parent, setParentId }: {
                 <Box className={classes.author}>author: {selectedSubChapter.author}</Box>
             </ButtonBase>
         </>}
+        
         <Observer>
             {() => <>
-                {(!selectedSubChapterId || showSelector) && <Box className={classes.selectorContainer}>
-                    {data.sub.length !== 0 && <FormControl component="fieldset" fullWidth>
-                        <FormLabel component="legend">选择一条分支</FormLabel>
-                        <RadioGroup value={selectedSubChapterId} onChange={handleChange}>
-                            {data.sub.map(item => <FormControlLabel
-                                key={item.id} value={item.id} control={<Radio size="small"/>} label={item.title}/>)}
-                        </RadioGroup>
-                    </FormControl>}
-                    <AddChapter data={data} />
-                </Box>}
+                {(!selectedSubChapterId || showSelector) && <ChapterSelector
+                    onSubmit={handleCreateChapterSubmit(data)}
+                    data={data} onSelect={handleChange} selectId={selectedSubChapterId} />}
             </>}
         </Observer>
         <Observer>
