@@ -96,7 +96,6 @@ const useChapterBoxStyles = makeStyles((theme: Theme) =>
             textAlign: 'right',
             width: '100%',
             marginTop: theme.spacing(1),
-            paddingRight: theme.spacing(4),
         },
         content: {
             marginTop: theme.spacing(6),

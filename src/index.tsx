@@ -5,9 +5,9 @@ import reportWebVitals from './reportWebVitals';
 import { autorun } from 'mobx';
 import { StoreProvider } from './store';
 import { CssBaseline } from '@material-ui/core';
-import { Book } from './store/book';
+import { Store } from './store/store';
 
-const data = new Book();
+const data = new Store();
 
 // autorun(() => {
 //   localStorage.setItem('interactive-book-store', JSON.stringify(data));

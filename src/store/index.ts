@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { Book } from './book';
+import { Store } from './store';
 
-export const StoreContext = createContext<Book>({} as Book);
+export const StoreContext = createContext<Store>({} as Store);
 export const StoreProvider = StoreContext.Provider;

@@ -4,11 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { ChapterBox } from './Chapter';
 import { config } from '../config';
 import { useHistory, useParams } from 'react-router-dom';
-import { Book } from '../store/book';
 import { HideOnScroll } from './HideOnScroll';
 import Skeleton from '@material-ui/lab/Skeleton';
 
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
+import { Chapter } from '../store/chapter';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export const BookBox = () => {
     const classes = useStyles();
     const { id } = useParams() as any;
-    const [book, setBook] = useState<Book | null>(null);
+    const [book, setBook] = useState<Chapter | null>(null);
     const history = useHistory();
 
     useEffect(() => {
@@ -35,7 +35,7 @@ export const BookBox = () => {
         })
         .then(data => data.json())
         .then(data => {
-            setBook(new Book(data.chapter));
+            setBook(new Chapter(data.chapter));
         });
     }, [id]);
   
