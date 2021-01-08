@@ -4,7 +4,7 @@ import { Chapter } from '../store/chapter';
 import { Observer } from 'mobx-react';
 import { ChapterSelector } from './ChapterSelector';
 import { config } from '../config';
-import { AddChapterDialog } from './Home';
+import { AddChapterDialog } from './AddChapterDialog';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { StoreContext } from '../store';
 
@@ -20,7 +20,7 @@ const useAddChapterStyles = makeStyles((theme: Theme) =>
 
 export const AddChapter = ({ onSubmit }: {
     onSubmit: (arg: {
-        content: string;
+        content: string[];
         title: string;
     }) => Promise<void>;
 }) => {
@@ -101,7 +101,7 @@ export const ChapterBox = ({ data, parent, setParentId }: {
     function handleCreateChapterSubmit(parent: Chapter) {
 
         return function ({ content, title }: {
-            content: string; title: string;
+            content: string[]; title: string;
         }) {
             return fetch(`${config.apiHost}/api/chapter`, {
                 method: 'post',
@@ -141,7 +141,6 @@ export const ChapterBox = ({ data, parent, setParentId }: {
             })
             .then(data => data.json())
             .then(({ chapter: chapterSource }) => {
-                // console.log('res', res);
                 let chapter = new Chapter(chapterSource);
                 setSelectedSubChapter(chapter);
                 data.addSubMap(chapter);
@@ -150,7 +149,9 @@ export const ChapterBox = ({ data, parent, setParentId }: {
     }, [selectedSubChapterId, data]);
 
     return <>
-        <Box className={classes.content}>{data.content}</Box>
+        <Box className={classes.content}>
+            {data.content.map((line: string) => <Box>{line}</Box>)}
+        </Box>
         {parent && <ChapterSelector
             header="觉得本章看的不过瘾？看看其他同样优秀的版本吧："
             onSubmit={handleCreateChapterSubmit(parent)}

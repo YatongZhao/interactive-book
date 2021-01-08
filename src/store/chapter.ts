@@ -4,7 +4,7 @@ console.log(uuidv4());
 export class Chapter {
     public title: string = '';
     public author: string = '';
-    public content: string = '';
+    public content: string[] = [];
     public sub: {
         id: string;
         title: string;

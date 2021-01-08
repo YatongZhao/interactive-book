@@ -21,7 +21,7 @@ export const ChapterSelector = ({ data, onSelect, selectId, onSubmit, header }: 
     selectId: String;
     onSelect: Function;
     onSubmit: (arg: {
-        content: string;
+        content: string[];
         title: string;
     }) => Promise<void>;
     header: string;
