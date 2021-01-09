@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     container: {
         outline: 'none',
-        border: `1px solid ${theme.palette.grey[600]}`,
+        border: (props: any) => `1px solid ${props.error ? theme.palette.error.main : theme.palette.grey[600]}`,
         borderRadius: theme.spacing(1),
         minHeight: theme.spacing(50),
         position: 'relative',
@@ -21,25 +21,38 @@ const useStyles = makeStyles((theme: Theme) =>
             content: '"内容"',
             position: 'absolute',
             fontSize: theme.typography.body1.fontSize,
-            color: theme.palette.grey[600],
+            color: (props: any) => props.error ? theme.palette.error.main : theme.palette.grey[600],
             left: 0,
             bottom: `calc(100% + ${theme.spacing(0.5)}px)`,
         },
         '&:focus': {
-            borderColor: theme.palette.primary.main,
+            borderColor: (props: any) => props.error ? theme.palette.error.main : theme.palette.primary.main,
             '&::before': {
-                color: theme.palette.primary.main,
+                color: (props: any) => props.error ? theme.palette.error.main : theme.palette.primary.main,
             },
+            '&::after': {
+                color: (props: any) => props.error ? theme.palette.error.main : theme.palette.primary.main,
+            }
         },
+        '&::after': {
+            content: (props: any) => `"${props.helpText}"`,
+            fontSize: theme.typography.caption.fontSize,
+            color: (props: any) => props.error ? theme.palette.error.main : theme.palette.grey[600],
+            position: 'absolute',
+            left: '40px',
+            bottom: `calc(100% + ${theme.spacing(0.5)}px)`,
+        }
     }
   })
 );
 
-export const ContentEditor = ({ value, onChange}: {
+export const ContentEditor = ({ value, onChange, error, helpText}: {
     value: string[];
     onChange: (e: string[]) => void;
+    error?: boolean;
+    helpText?: string;
 }) => {
-    const classes = useStyles();
+    const classes = useStyles({ error, helpText });
     const ref = useRef() as React.MutableRefObject<HTMLDivElement>;
     const [values1, setValues1] = useState<string[]>([]);
     useEffect(() => {

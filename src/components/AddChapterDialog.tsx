@@ -81,6 +81,17 @@ export const AddChapterDialog = ({
             return;
         }
 
+        let content = '';
+        content = contents.reduce((pre: string, current: string) => {
+            return pre + current.trim();
+        }, '');
+
+        if (!content) {
+            setIsContentError(true);
+            setContentErrorMsg('内容不能为空');
+            return;
+        }
+
         setPending(true);
         onSubmit({ content: contents, title: name })
             .then(data => {
@@ -116,7 +127,7 @@ export const AddChapterDialog = ({
                 />
             </Grid>
             <Grid item xs={12}>
-                <ContentEditor value={contents} onChange={setContents} />
+                <ContentEditor value={contents} onChange={setContents} helpText={contentErrorMsg} error={isContentError} />
             </Grid>
         </Grid>
         <Slide in={pending} direction="down">
