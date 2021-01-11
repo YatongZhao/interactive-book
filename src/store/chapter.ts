@@ -12,6 +12,8 @@ export class Chapter {
     }[] = [];
     public subMap: { [key: string]: Chapter } = {};
     public id: string = '';
+    public likeNum = 0;
+    public liked = false;
 
     public selectedSubId = '';
 
@@ -44,6 +46,8 @@ export class Chapter {
             sub: observable,
             subMap: observable,
             selectedSubId: observable,
+            likeNum: observable,
+            liked: observable,
             selectedSubIdIndex: computed,
             hasPreSubId: computed,
             hasNextSubId: computed,
@@ -53,6 +57,8 @@ export class Chapter {
             setNextSelectedSubId: action,
             setPreSelectedSubId: action,
             initialize: action,
+            setLikeNum: action,
+            setLiked: action,
         });
     }
 
@@ -62,6 +68,8 @@ export class Chapter {
         this.author = source.author;
         this.content = source.content;
         this.sub = (source.sub || []);
+        this.likeNum = source.likeNum;
+        this.liked = source.liked;
 
         this.initialized = true;
     }
@@ -94,5 +102,13 @@ export class Chapter {
 
     setPreSelectedSubId() {
         this.selectedSubId = this.sub[this.selectedSubIdIndex - 1].id;
+    }
+
+    setLikeNum(num: number) {
+        this.likeNum = num;
+    }
+
+    setLiked(bool: boolean) {
+        this.liked = bool;
     }
 }

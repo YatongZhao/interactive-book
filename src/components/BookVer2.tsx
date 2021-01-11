@@ -26,11 +26,12 @@ export const BookBoxVer2 = () => {
     const classes = useStyles();
     const { id } = useParams() as any;
     const [book, setBook] = useState<Chapter | null>(null);
-    const history = useHistory();
 
     useEffect(() => {
         fetch(`${config.apiHost}/api/chapter/${id}`, {
-            method: 'get'
+            method: 'get',
+            mode: 'cors',
+            credentials: 'include',
         })
         .then(data => data.json())
         .then(data => {

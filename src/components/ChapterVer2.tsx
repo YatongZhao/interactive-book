@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { autorun } from 'mobx';
 import { useObserver } from 'mobx-react';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
+import ThumbUpAltIcon from '@material-ui/icons/ThumbUpAlt';
 import { AddChapterDialog } from './AddChapterDialog';
 import { StoreContext } from '../store';
 
@@ -72,12 +73,33 @@ const useChapterBoxStyles = makeStyles((theme: Theme) =>
         bottomBar: {
             borderTop: `1px solid ${theme.palette.divider}`,
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             paddingLeft: theme.spacing(1),
             paddingRight: theme.spacing(1),
             position: 'sticky',
             bottom: 0,
             backgroundColor: theme.palette.background.default,
+        },
+        likeBtn: {
+            width: theme.spacing(4.5),
+            height: theme.spacing(4.5),
+            display: 'flex',
+            flexDirection: 'column',
+            color: theme.palette.grey[600],
+        },
+        likeBtnBox: {
+            display: 'flex',
+            flexDirection: 'column',
+        },
+        liked: {
+            color: theme.palette.secondary.main,
+        },
+        unliked: {
+        },
+        iconBtnNum: {
+            lineHeight: 1,
+            position: 'relative',
+            top: '-2px',
         }
     })
 );
@@ -86,7 +108,7 @@ export const ChapterBoxVer2 = ({ data, parent }: {
     data?: Chapter;
     parent?: Chapter;
 }) => {
-    const classes = useChapterBoxStyles();
+    const classes = useChapterBoxStyles({ liked: data?.liked });
     const [selectedSubChapter, setSelectedSubChapter] = useState<Chapter | undefined>(undefined);
     const history = useHistory();
     const [showSelector, setShowSelector] = useState(false);
@@ -99,7 +121,9 @@ export const ChapterBoxVer2 = ({ data, parent }: {
             setSelectedSubChapter(data?.subMap[data?.selectedSubId]);
         } else {
             fetch(`${config.apiHost}/api/chapter/${data?.selectedSubId}`, {
-                method: 'get'
+                method: 'get',
+                mode: 'cors',
+                credentials: 'include',
             })
             .then(data => data.json())
             .then(({ chapter: chapterSource }) => {
@@ -143,6 +167,24 @@ export const ChapterBoxVer2 = ({ data, parent }: {
         }
     }, [store, history]);
 
+    const handleLike = () => {
+        if (!(store.isIsLoginReady && store.isLogin)) {
+            history.push('/login');
+            return;
+        }
+        fetch(`${config.apiHost}/api/chapter/${data?.liked ? 'unlike' : 'like'}?id=${data?.id}`, {
+            method: 'post',
+            mode: 'cors',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(_data => {
+            data?.setLikeNum(data.liked ? data.likeNum - 1 : data.likeNum + 1);
+            data?.setLiked(!data.liked);
+        });
+    }
+
     return useObserver(() => <>
         <Box>
             <Box className={classes.titleBox}>
@@ -185,9 +227,19 @@ export const ChapterBoxVer2 = ({ data, parent }: {
             {data && <Box className={classes.content}>
                 {data?.content.map((line: string, i) => <Box key={i}>{line}</Box>)}
             </Box>}
-            {data && parent && <Box className={classes.bottomBar}>
-                <Button onClick={() => parent.setPreSelectedSubId()} disabled={!parent.hasPreSubId}>上一个剧情</Button>
-                <Button onClick={() => parent.setNextSelectedSubId()} disabled={!parent.hasNextSubId}>下一个剧情</Button>
+            {data && <Box className={classes.bottomBar}>
+                <Box>
+                    <IconButton className={classes.likeBtn} size="small" onClick={handleLike}>
+                        <Box className={classes.likeBtnBox}>
+                            <ThumbUpAltIcon className={data.liked ? classes.liked : classes.unliked} fontSize="small" />
+                            <Typography className={classes.iconBtnNum} variant="caption">{data.likeNum}</Typography>
+                        </Box>
+                    </IconButton>
+                </Box>
+                <Box>
+                    <Button onClick={() => parent?.setPreSelectedSubId()} disabled={!parent?.hasPreSubId}>上一个剧情</Button>
+                    <Button onClick={() => parent?.setNextSelectedSubId()} disabled={!parent?.hasNextSubId}>下一个剧情</Button>
+                </Box>
             </Box>}
         </Box>
         {(data || selectedSubChapter) && <ChapterBoxVer2 key={'' + selectedSubChapter?.id + data?.id} data={selectedSubChapter} parent={data} />}
