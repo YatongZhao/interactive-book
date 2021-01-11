@@ -2,7 +2,7 @@ import { Box, createStyles, List, ListItem, ListItemIcon, ListItemText, ListSubh
 import { Observer } from 'mobx-react';
 import React from 'react';
 import { Chapter } from '../store/chapter';
-import { AddChapter } from './Chapter';
+import { AddChapter } from './AddChapter';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

@@ -1,53 +1,10 @@
-import { Box, Button, ButtonBase, createStyles, makeStyles, Theme, Typography, Link } from '@material-ui/core';
-import React, { useContext, useEffect, useState } from 'react';
+import { Box, ButtonBase, createStyles, makeStyles, Theme, Typography } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
 import { Chapter } from '../store/chapter';
 import { Observer } from 'mobx-react';
 import { ChapterSelector } from './ChapterSelector';
 import { config } from '../config';
-import { AddChapterDialog } from './AddChapterDialog';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
-import { StoreContext } from '../store';
-
-const useAddChapterStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    loginTips: {
-        marginTop: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-        color: theme.palette.grey[400],
-    }
-  })
-);
-
-export const AddChapter = ({ onSubmit }: {
-    onSubmit: (arg: {
-        content: string[];
-        title: string;
-    }) => Promise<void>;
-}) => {
-    const [openAddDialog, setOpenAddDialog] = useState(false);
-    const store = useContext(StoreContext);
-    const classes = useAddChapterStyles();
-
-    return <Observer>
-        {() => <>
-            {store.isLogin ? <>
-                <Button onClick={() => setOpenAddDialog(true)} fullWidth variant="outlined">创作章节</Button>
-                <AddChapterDialog
-                    titleLabel="标题"
-                    dialogTitle="添加章节"
-                    contentPlaceHolder="本章内容..."
-                    open={openAddDialog}
-                    handleClose={() => setOpenAddDialog(false)}
-                    onSubmit={onSubmit} />
-            </> :
-            <Box className={classes.loginTips}>
-                <Typography variant="caption">
-                    快去<Link to="/login" component={RouterLink}>登录</Link>开始自己对本章的创作吧～
-                </Typography>
-            </Box>}
-        </>}
-    </Observer>;
-}
+import { useHistory } from 'react-router-dom';
 
 const useChapterBoxStyles = makeStyles((theme: Theme) =>
     createStyles({

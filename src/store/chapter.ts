@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
 console.log(uuidv4());
 export class Chapter {
@@ -13,8 +13,21 @@ export class Chapter {
     public subMap: { [key: string]: Chapter } = {};
     public id: string = '';
 
+    public selectedSubId = '';
+
     public initialized = false;
 
+    public get selectedSubIdIndex(): number {
+        return this.sub.findIndex(sub => this.selectedSubId === sub.id);
+    }
+
+    public get hasPreSubId(): boolean {
+        return this.selectedSubIdIndex > 0;
+    }
+
+    public get hasNextSubId(): boolean {
+        return this.selectedSubIdIndex < this.sub.length - 1;
+    }
 
     constructor(source?: any) {
 
@@ -30,8 +43,15 @@ export class Chapter {
             content: observable,
             sub: observable,
             subMap: observable,
+            selectedSubId: observable,
+            selectedSubIdIndex: computed,
+            hasPreSubId: computed,
+            hasNextSubId: computed,
             addSub: action,
             addSubMap: action,
+            setSelectedSubId: action,
+            setNextSelectedSubId: action,
+            setPreSelectedSubId: action,
             initialize: action,
         });
     }
@@ -62,5 +82,17 @@ export class Chapter {
 
     addSubMap(chapter: Chapter) {
         this.subMap[chapter.id] = chapter;
+    }
+
+    setSelectedSubId(id: string) {
+        this.selectedSubId = id;
+    }
+
+    setNextSelectedSubId() {
+        this.selectedSubId = this.sub[this.selectedSubIdIndex + 1].id;
+    }
+
+    setPreSelectedSubId() {
+        this.selectedSubId = this.sub[this.selectedSubIdIndex - 1].id;
     }
 }

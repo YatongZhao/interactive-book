@@ -52,7 +52,7 @@ export const Home = () => {
     }, []);
 
     function handleClickBook(id: string) {
-        history.push(`/book/${id}`);
+        history.push(`/book-ver2/${id}`);
     }
 
     function handleCreateBookSubmit({ content, title }: {
