@@ -1,5 +1,5 @@
 import { Box, Button, ButtonBase, createStyles, IconButton, makeStyles, Slide, Theme, Typography } from '@material-ui/core';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Chapter } from '../store/chapter';
 import { ChapterSelector } from './ChapterSelector';
 import { config } from '../config';
@@ -13,6 +13,11 @@ import { StoreContext } from '../store';
 
 const useChapterBoxStyles = makeStyles((theme: Theme) =>
     createStyles({
+        container: {
+            '&:last-of-type': {
+                minHeight: '100vh',
+            },
+        },
         titleBox: {
             position: 'sticky',
             zIndex: 10,
@@ -114,6 +119,7 @@ export const ChapterBoxVer2 = ({ data, parent }: {
     const [showSelector, setShowSelector] = useState(false);
     const store = useContext(StoreContext);
     const [openAddChapterDialog, setOpenAddChapterDialog] = useState(false);
+    const containerEl = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => autorun(() => {
         if (!data?.selectedSubId) return;
@@ -185,8 +191,23 @@ export const ChapterBoxVer2 = ({ data, parent }: {
         });
     }
 
+    const handleGo = (type: 'next' | 'pre') => {
+        switch (type) {
+            case 'next':
+                parent?.setNextSelectedSubId();
+                break;
+            case 'pre':
+            default:
+                parent?.setPreSelectedSubId();
+                break;
+        }
+        if (window.scrollY - (containerEl.current?.offsetTop || 0) > 0) {
+            window.scrollTo({ top: containerEl.current?.offsetTop });
+        }
+    }
+
     return useObserver(() => <>
-        <Box>
+        <div className={classes.container} ref={containerEl}>
             <Box className={classes.titleBox}>
                 {data && <Box className={classes.title}>
                     <IconButton onClick={history.goBack}>
@@ -237,11 +258,11 @@ export const ChapterBoxVer2 = ({ data, parent }: {
                     </IconButton>
                 </Box>
                 <Box>
-                    <Button onClick={() => parent?.setPreSelectedSubId()} disabled={!parent?.hasPreSubId}>上一个剧情</Button>
-                    <Button onClick={() => parent?.setNextSelectedSubId()} disabled={!parent?.hasNextSubId}>下一个剧情</Button>
+                    <Button onClick={() => handleGo('pre')} disabled={!parent?.hasPreSubId}>上一个剧情</Button>
+                    <Button onClick={() => handleGo('next')} disabled={!parent?.hasNextSubId}>下一个剧情</Button>
                 </Box>
             </Box>}
-        </Box>
+        </div>
         {(data || selectedSubChapter) && <ChapterBoxVer2 key={'' + selectedSubChapter?.id + data?.id} data={selectedSubChapter} parent={data} />}
     </>);
 }
