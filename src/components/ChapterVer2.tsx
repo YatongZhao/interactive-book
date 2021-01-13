@@ -70,6 +70,9 @@ const useChapterBoxStyles = makeStyles((theme: Theme) =>
             textIndent: theme.spacing(4),
             lineHeight: theme.spacing(.22),
         },
+        paragraph: {
+            marginTop: theme.spacing(1),
+        },
         selectorContainer: {
             paddingLeft: theme.spacing(3),
             marginTop: theme.spacing(2),
@@ -113,7 +116,7 @@ export const ChapterBoxVer2 = ({ data, parent }: {
     data?: Chapter;
     parent?: Chapter;
 }) => {
-    const classes = useChapterBoxStyles({ liked: data?.liked });
+    const classes = useChapterBoxStyles();
     const [selectedSubChapter, setSelectedSubChapter] = useState<Chapter | undefined>(undefined);
     const history = useHistory();
     const [showSelector, setShowSelector] = useState(false);
@@ -201,10 +204,13 @@ export const ChapterBoxVer2 = ({ data, parent }: {
                 parent?.setPreSelectedSubId();
                 break;
         }
+    }
+
+    useEffect(() => {
         if (window.scrollY - (containerEl.current?.offsetTop || 0) > 0) {
             window.scrollTo({ top: containerEl.current?.offsetTop });
         }
-    }
+    },[]);
 
     return useObserver(() => <>
         <div className={classes.container} ref={containerEl}>
@@ -246,7 +252,9 @@ export const ChapterBoxVer2 = ({ data, parent }: {
                     parent && parent.setSelectedSubId(id);
                 }} selectId={parent.selectedSubId} />}
             {data && <Box className={classes.content}>
-                {data?.content.map((line: string, i) => <Box key={i}>{line}</Box>)}
+                {data?.content.map((line: string, i) => <Box key={i} className={classes.paragraph}>
+                    {line}
+                </Box>)}
             </Box>}
             {data && <Box className={classes.bottomBar}>
                 <Box>
